@@ -103,7 +103,7 @@ class Gits3(object):
         
     def get_commits(self, interesting, uninteresting):
         commits = [interesting]
-        remaining = interesting.get_parents()
+        remaining = interesting.parents
         
         while remaining:
             pId = remaining.pop(0)
@@ -131,8 +131,7 @@ class Gits3(object):
         objects = []
         tree = self.repo.get_object(treeId)
         objects.append(tree)
-        entries = tree.entries()
-        for entryId in entries:
+        for entryId in tree.items():
             # get the entry's sha 
             objectId = entryId[2]
             object = self.repo.get_object(objectId) 
