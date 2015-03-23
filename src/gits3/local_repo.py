@@ -112,7 +112,7 @@ class Gits3(object):
             else:
                 parent = self.repo.get_object(pId)
                 commits.append(parent)
-                parents = parent.get_parents()
+                parents = parent.parents
                 remaining.extend(parents)
         return commits
     
@@ -174,3 +174,4 @@ class Gits3(object):
         
     def expand_from_src(self, src, dst, refs):
         return dst[:-1] + refs[len(src)-1:]
+
