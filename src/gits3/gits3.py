@@ -32,13 +32,12 @@ import sys
 import getopt
 
 
-
 def usage():
     print 'Usage: gits3 push <remote> <refs>'
 
 
 def get_root():
-    
+
     # get current directory
     root = os.getcwd()
     # check to see if the current folder is Git repo
@@ -46,7 +45,7 @@ def get_root():
     if not os.path.exists(git_dir):
         print "Should run in git repo"
         sys.exit(2)
-    
+
     return root
 
 
@@ -87,37 +86,32 @@ def push(repo_dir, refs):
 
         transport.upload_string('objects/info/packs', packs_str)
         transport.upload_string(refs, client.get_id(refs))
-        transport.upload_string('info/refs', client.get_id(refs) + '\t' + refs + '\n')
+        upload_string = "{0}\t{1}\n".format(client.get_id(refs), refs)
+        transport.upload_string('info/refs', upload_string)
+
 
 def main(argv):
-    
-    
-    # parse the arguments
-    
     try:
         opts, args = getopt.getopt(argv, 'h')
     except getopt.GetoptError, err:
         # print help information and exit:
-        print str(err) # will print something like "option -a not recognized"
+        print str(err)   # will print something like "option -a not recognized"
         usage()
         sys.exit(2)
-        
+
     if len(args) < 3:
         usage()
         sys.exit(2)
     if args[0] != 'push':
         usage()
-        sys.exit(2)    
-    
-    refs = args[2]
-    print 'Local Refs: ',refs 
-        
-        
-    root = get_root()
-    
-    push(root, refs)
-    
+        sys.exit(2)
 
+    refs = args[2]
+    print 'Local Refs: ', refs
+
+    root = get_root()
+
+    push(root, refs)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
