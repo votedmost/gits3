@@ -20,8 +20,7 @@
 @author: abdelhalim
 '''
 
-from boto.s3.connection import S3Connection
-from boto.s3.key import Key
+import boto
 
 from git_config import GitConfig
 
@@ -38,7 +37,6 @@ class S3Transport(object):
                              )
 
     def __init__(self, url):
-
         self.url = url
         o = self.URL_PATTERN.match(self.url)
         if o:
@@ -47,21 +45,8 @@ class S3Transport(object):
             if self.prefix.endswith('/'):
                 self.prefix = self.prefix[:-1]
 
-            # read the jgit config file to access S3
-            config_file = o.group('config')
-            homedir = os.path.expanduser('~')
-            config_path = homedir + '/' + config_file
-#            print config_path
-            props = self.open_properties(config_path)
-            accesskey = props['accesskey']
-            secretkey = props['secretkey']
-
-#            print 'accesskey=',accesskey
-#            print 'secretkey=',secretkey
-
-            self.s3Conn = S3Connection(accesskey, secretkey)
+            self.s3Conn = boto.connect_s3()
             self.bucket = self.s3Conn.get_bucket(bucket_name, False)
-#            print self.bucket
 
     def open_properties(self, properties_file):
         propFile = file(properties_file, "rU")
