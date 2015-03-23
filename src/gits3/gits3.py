@@ -49,6 +49,46 @@ def get_root():
     
     return root
 
+
+def push(repo_dir, refs):
+    root = repo_dir
+    cfg = GitConfig(root)
+    url = cfg.get_remote_url()
+    fetch = cfg.get_fetch()
+    transport = S3Transport(url)
+
+    advertised_refs = transport.get_advertised_refs()
+
+    if len(advertised_refs) == 0:
+        transport.create_new_repo(refs)
+
+    client = Gits3(root)
+    tracking_ref = client.find_tracking_ref_names(fetch, refs)
+
+    updated_objects = client.get_updates(refs, tracking_ref)
+
+    if updated_objects == None:
+        print 'Up to date'
+    else:
+        base = client.generate_pack_name(updated_objects)
+
+        client.write_pack(base, updated_objects)
+
+        pack_name = 'pack-' + base + '.pack'
+        transport.upload_pack(pack_name)
+        transport.upload_pack('pack-' + base + '.idx')
+
+        packs = transport.get_pack_names()
+        packs_str = 'P ' + pack_name + '\n'
+        for pack in packs:
+            packs_str = packs_str + 'P ' + pack + '\n'
+
+        print packs_str
+
+        transport.upload_string('objects/info/packs', packs_str)
+        transport.upload_string(refs, client.get_id(refs))
+        transport.upload_string('info/refs', client.get_id(refs) + '\t' + refs + '\n')
+
 def main(argv):
     
     
